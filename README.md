@@ -1,18 +1,18 @@
-# BetterMan: A Better API Tool
+# PostSense: Intelligence-Backed API Debugging
 
 **Stop staring at generic 404s and 405s.**  
-Most API clients just send requests; BetterMan actually debugs them by comparing your failures against your history.  
+Most API clients just send requests; PostSense actually debugs them by comparing your failures against your history.  
 Get evidence-backed fixes, not just status codes.
 
 ---
 
-## Why BetterMan?
+## Why PostSense?
 
-Generic API clients are reactive. They show you a status code and leave you to guess the "why." BetterMan is proactive. It looks at your session history, identifies successful patterns, and performs **Differential Analysis** to tell you exactly why your current request is failing.
+Generic API clients are reactive. They show you a status code and leave you to guess the "why." PostSense is proactive. It looks at your session history, identifies successful patterns, and performs **Differential Analysis** to tell you exactly why your current request is failing.
 
 ### The Differential Debugging Edge
 
-| Feature | Standard Clients | BetterMan |
+| Feature | Standard Clients | PostSense |
 | :--- | :--- | :--- |
 | **Error Handling** | Raw `404` or `405` | **Method Mismatch Detected** |
 | **CORS Testing** | Hidden (Bypasses CORS) | **Browser Simulation Mode** |
@@ -27,13 +27,13 @@ Generic API clients are reactive. They show you a status code and leave you to g
 You're testing an endpoint that you *know* exists, but you're getting a `404 Not Found`.
 
 - **Traditional Client:** You waste 10 minutes auditing the URL path for typos.
-- **BetterMan:** Detects that a `GET` request to the same URL succeeded earlier. It promotes a **Method Mismatch Detected** warning and offers a "Switch to GET" button with **High Confidence**.
+- **PostSense:** Detects that a `GET` request to the same URL succeeded earlier. It promotes a **Method Mismatch Detected** warning and offers a "Switch to GET" button with **High Confidence**.
 
 ### 2. The CORS Mirage
 Your API works perfectly in your desktop client, but crashes the second you call it from your frontend.
 
 - **Traditional Client:** Everything looks green (because it's not a browser).
-- **BetterMan:** Flip to **Browser Mode**. BetterMan simulates origin-based security and warns you about missing `Access-Control-Allow-Origin` headers *before* you even hit the network.
+- **PostSense:** Flip to **Browser Mode**. PostSense simulates origin-based security and warns you about missing `Access-Control-Allow-Origin` headers *before* you even hit the network.
 
 ---
 
@@ -53,13 +53,13 @@ Your API works perfectly in your desktop client, but crashes the second you call
 
 ## Getting Started
 
-You can use BetterMan immediately in your browser or run it locally.
+PostSense is a single-folder, vanilla JS project. No `npm install`, no heavy dependencies.
 
 ### 1. Simple Access (No Setup)
 Open the **[Live Demo](https://tkwind.github.io/BetterMan/)** and start debugging instantly.
 
 ### 2. Local Setup
-BetterMan is a single-folder, vanilla JS project. No `npm install`, no heavy dependencies.
+PostSense is a single-folder, vanilla JS project. No `npm install`, no heavy dependencies.
 
 1. Clone the repo.
 2. Open `index.html` in your browser (or serve it with a lightweight server like `serve` or `live-server`).
