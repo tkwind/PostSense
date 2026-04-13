@@ -51,16 +51,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (issue.fix) {
       html += `
         <div class="issue-fix">
-          <span>Suggested fix: <code>${issue.fix}</code></span>
+          <span>Quick Fix: <code>${issue.fix}</code></span>
           <button class="copy-fix-btn" data-fix="${issue.fix.replace(/"/g, '&quot;')}">Copy</button>
         </div>`;
     }
     
-    if (issue.action) {
-      html += `
-        <div class="issue-action">
-          <button class="action-btn" id="${issue.action.id}">${issue.action.label}</button>
-        </div>`;
+    // Multi-Suggestion Support
+    if (issue.suggestions && issue.suggestions.length > 0) {
+      html += `<div class="suggested-actions-container">
+                 <div class="section-header">Suggested Actions</div>`;
+      
+      issue.suggestions.forEach(sug => {
+        const confClass = sug.confidence === 'High' ? 'confidence-high' : 'confidence-medium';
+        html += `
+          <div class="action-item">
+            <div class="action-label">
+              ${sug.label}
+              <span class="confidence-tag ${confClass}">${sug.confidence}</span>
+            </div>
+            <button class="action-btn" data-action-id="${sug.id}" ${sug.data ? `data-action-val="${sug.data}"` : ''}>
+              ${sug.btnLabel || 'Run'}
+            </button>
+          </div>
+        `;
+      });
+      html += `</div>`;
     }
     
     li.innerHTML = html;
@@ -73,9 +88,24 @@ document.addEventListener('DOMContentLoaded', () => {
       navigator.clipboard.writeText(fixText);
       e.target.textContent = 'Copied!';
       setTimeout(() => e.target.textContent = 'Copy', 2000);
-    } else if (e.target.id === 'retry-get-btn') {
-      methodSelect.value = 'GET';
-      sendBtn.click();
+    } else if (e.target.classList.contains('action-btn')) {
+      const actionId = e.target.getAttribute('data-action-id');
+      const actionVal = e.target.getAttribute('data-action-val');
+      
+      if (actionId === 'retry-get') {
+        methodSelect.value = 'GET';
+        sendBtn.click();
+      } else if (actionId === 'check-path') {
+        urlInput.focus();
+        urlInput.style.outline = '2px solid #3498db';
+        setTimeout(() => urlInput.style.outline = '', 2000);
+      } else if (actionId === 'verify-auth') {
+        // Scroll to headers
+        headersContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Pulse headers
+        headersContainer.style.background = '#eafaf1';
+        setTimeout(() => headersContainer.style.background = '', 1000);
+      }
     }
   });
 
@@ -90,30 +120,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 1. Advanced HTTP Status Mapping
     if (response.status === 404) {
-      let explanation = 'The requested endpoint does not exist on this server.';
+      const suggestions = [{ id: 'check-path', label: 'Verify URL path', confidence: 'High' }];
       if (currentMethod !== 'GET') {
-          explanation += ` Note: ${currentMethod} was used, but this path might only exist for GET requests.`;
+          suggestions.push({ id: 'retry-get', label: 'Retry as GET', confidence: 'Medium', btnLabel: 'Switch' });
       }
       responseIssues.push({
         problem: 'Endpoint Not Found (404)',
-        why: explanation,
-        fix: 'Check the URL or try changing the HTTP Method to GET.',
+        why: `The server responded with 404. Path: ${urlInput.value}`,
+        fix: 'Check for typos or method mismatch.',
         severity: 'error',
-        action: currentMethod !== 'GET' ? { id: 'retry-get-btn', label: 'Retry as GET' } : null
+        suggestions
       });
     } else if (response.status === 401 || response.status === 403) {
       responseIssues.push({
-        problem: 'Authentication or Permission Issue',
-        why: `The server rejected the request with a ${response.status} code.`,
-        fix: 'Ensure you have provided the correct Authorization headers or API Keys.',
-        severity: 'error'
+        problem: 'Authentication Issue',
+        why: `Request was rejected with ${response.status}.`,
+        severity: 'error',
+        suggestions: [
+          { id: 'verify-auth', label: 'Check Auth Headers', confidence: 'High' },
+          { id: 'check-path', label: 'Verify URL path', confidence: 'Medium' }
+        ]
       });
     } else if (response.status === 405) {
       responseIssues.push({
         problem: 'Method Not Allowed (405)',
-        why: `The server explicitly disallowed the ${currentMethod} method for this endpoint.`,
-        fix: 'Try switching the HTTP Method to GET or refer to the API documentation.',
-        severity: 'error'
+        why: `${currentMethod} is not supported here.`,
+        severity: 'error',
+        suggestions: [
+          { id: 'retry-get', label: 'Switch to GET', confidence: 'High' },
+          { id: 'check-path', label: 'Check API Docs', confidence: 'Medium' }
+        ]
       });
     } else if (response.status >= 400 && response.status < 500) {
       responseIssues.push({
@@ -173,31 +209,33 @@ document.addEventListener('DOMContentLoaded', () => {
        li.style.background = '#eafaf1';
        li.innerHTML = '<div class="issue-title" style="color: #27ae60;">No issues detected</div><div class="issue-why">The request executed cleanly according to simulation rules.</div>';
        issuesList.appendChild(li);
-    } else if (totalIssues > 1) {
+    } else if (totalIssues > 0) {
       // Formally section the output
       const cards = issuesList.querySelectorAll('.issue-card');
       cards.forEach((card, index) => {
+        // Clean up previous headers
+        const oldHeaders = card.querySelectorAll('.section-header');
+        oldHeaders.forEach(h => {
+             // If it's the "Suggested Actions" one we just added in logIssue, keep it.
+             // Otherwise remove it to avoid duplicates.
+             if (h.textContent !== 'Suggested Actions') h.remove();
+        });
+
         if (index === 0) {
           const sectionLabel = document.createElement('div');
           sectionLabel.className = 'section-header';
           sectionLabel.textContent = 'Primary Issue';
-          sectionLabel.style.fontWeight = 'bold';
-          sectionLabel.style.marginBottom = '10px';
-          sectionLabel.style.color = '#333';
+          sectionLabel.style.color = card.classList.contains('severity-error') ? '#c0392b' : '#d68910';
           card.prepend(sectionLabel);
         } else {
-          card.style.opacity = '0.7';
+          card.style.opacity = '0.75';
           card.style.transform = 'scale(0.98)';
-          card.style.marginTop = '10px';
+          card.style.marginTop = '15px';
           
           if (!card.querySelector('.section-header')) {
             const label = document.createElement('div');
             label.className = 'section-header';
             label.textContent = 'Additional Note';
-            label.style.fontSize = '0.7rem';
-            label.style.textTransform = 'uppercase';
-            label.style.opacity = '0.6';
-            label.style.marginBottom = '5px';
             card.prepend(label);
           }
         }
