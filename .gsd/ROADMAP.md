@@ -13,6 +13,6 @@
 ## Phases
 
 ### Phase 1: Implementation
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: Build the app.js script implementing the request engine and prepare the written code walkthrough.
 **Requirements**: REQ-01, REQ-02, REQ-03, REQ-04
