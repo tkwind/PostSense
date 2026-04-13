@@ -177,6 +177,74 @@ pre {
 
 #issues-list {
   margin: 0;
-  padding-left: 20px;
-  color: #e74c3c;
+  padding: 0;
+  list-style: none;
+}
+
+.issue-card {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  border-left: 5px solid #ccc;
+  background: #fdfdfd;
+}
+
+.issue-card.severity-warning {
+  border-left-color: #f39c12;
+  background: #fdfae5;
+}
+
+.issue-card.severity-error {
+  border-left-color: #e74c3c;
+  background: #fdf3f2;
+}
+
+.issue-title {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+
+.severity-warning .issue-title {
+  color: #d68910;
+}
+
+.severity-error .issue-title {
+  color: #c0392b;
+}
+
+.issue-why {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.issue-fix {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  background: rgba(0,0,0,0.05);
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.issue-fix code {
+  color: #c0392b;
+  font-family: monospace;
+}
+
+.copy-fix-btn {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: 0.2s;
+}
+
+.copy-fix-btn:hover {
+  background: #eee;
 }

@@ -39,14 +39,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  function logIssue(msg) {
+  function logIssue(issue) {
+    if (typeof issue === 'string') {
+      issue = { problem: issue, why: '', fix: '', severity: 'warning' };
+    }
     const li = document.createElement('li');
-    li.textContent = msg;
+    li.className = `issue-card severity-${issue.severity || 'warning'}`;
+    
+    let html = `<div class="issue-title">${issue.problem}</div>`;
+    if (issue.why) html += `<div class="issue-why">${issue.why}</div>`;
+    if (issue.fix) html += `
+      <div class="issue-fix">
+        <span>Suggested fix: <code>${issue.fix}</code></span>
+        <button class="copy-fix-btn" data-fix="${issue.fix.replace(/"/g, '&quot;')}">Copy</button>
+      </div>`;
+    
+    li.innerHTML = html;
     issuesList.appendChild(li);
   }
 
+  issuesList.addEventListener('click', (e) => {
+    if (e.target.classList.contains('copy-fix-btn')) {
+      const fixText = e.target.getAttribute('data-fix');
+      navigator.clipboard.writeText(fixText);
+      e.target.textContent = 'Copied!';
+      setTimeout(() => e.target.textContent = 'Copy', 2000);
+    }
+  });
+
   function clearIssues() {
     issuesList.innerHTML = '';
+  }
+
+  function analyzeResponse(response, headersObj) {
+    // Stub to be implemented in Phase 2
   }
 
   // Build Headers Object
@@ -61,7 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isBrowserMode) {
           const forbiddenHeaders = ['origin', 'accept-charset', 'accept-encoding', 'connection', 'content-length', 'cookie', 'host', 'referer'];
           if (forbiddenHeaders.includes(key.toLowerCase())) {
-            logIssue(`Blocked unsafe header in Browser Mode: ${key}`);
+            logIssue({
+              problem: `Blocked unsafe header in Browser Mode: ${key}`,
+              why: 'Browsers restrict manual modification of certain required communication headers.',
+              severity: 'error'
+            });
             return; // Skip adding this header
           }
         }
@@ -71,7 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isBrowserMode && !headers['Origin'] && !headers['origin']) {
         headers['Origin'] = window.location.origin || 'http://localhost';
-        logIssue('Injected Origin header for Browser Mode simulation.');
+        logIssue({
+          problem: 'Injected Origin header for Browser Mode simulation.',
+          severity: 'warning'
+        });
     }
 
     return headers;
@@ -95,7 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let url = urlInput.value.trim();
 
     if (!url) {
-      logIssue('URL cannot be empty');
+      logIssue({
+        problem: 'URL cannot be empty',
+        why: 'The fetch request requires an active endpoint to target.',
+        severity: 'error'
+      });
       return;
     }
 
@@ -106,7 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let bodyData = bodyTextarea.value.trim();
     if (bodyData && (method === 'GET' || method === 'HEAD')) {
-      logIssue('GET/HEAD requests cannot have a body. Body ignored.');
+      logIssue({
+        problem: 'GET/HEAD requests cannot have a body. Body ignored.',
+        severity: 'warning'
+      });
       bodyData = null;
     }
 
@@ -142,10 +182,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const text = await response.text();
       resBody.textContent = formatOutput(text);
 
+      analyzeResponse(response, resHeadersObj);
+
     } catch (error) {
       resStatus.textContent = 'Network Error';
       resBody.textContent = error.toString();
-      logIssue(`Fetch failed: ${error.message}`);
+      logIssue({
+        problem: `Fetch failed: ${error.message}`,
+        why: 'This might be a server fault, a network drop, or a CORS restriction preventing the request.',
+        severity: 'error'
+      });
     }
   });
 
