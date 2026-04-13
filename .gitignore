@@ -8,7 +8,6 @@ scripts/
 gsd-template/
 node_modules/
 *.webp
-*.png
 *.log
 GSD-STYLE.md
 PROJECT_RULES.md
