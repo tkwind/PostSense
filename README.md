@@ -1,3 +1,5 @@
+![PostSense Banner](banner.png)
+
 # PostSense: Intelligence-Backed API Debugging
 
 **Stop staring at generic 404s and 405s.**  
