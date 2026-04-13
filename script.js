@@ -343,8 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
-    // Update badge count after rendering completes
-    document.getElementById('issue-count-badge').textContent = issuesList.children.length;
+    // Update badge count (only count actual errors/warnings, not the success placeholder)
+    const activeIssues = issuesList.querySelectorAll('.issue-card:not(.severity-success)').length;
+    document.getElementById('issue-count-badge').textContent = activeIssues;
   }
 
   function isValidUrl(string) {
