@@ -24,6 +24,20 @@ Generic API clients are reactive. They show you a status code and leave you to g
 
 ---
 
+## Getting Started
+
+PostSense is a single-folder, vanilla JS project. No `npm install`, no heavy dependencies.
+
+### 1. Simple Access (No Setup)
+Open the **[Live Demo](https://tkwind.github.io/BetterMan/)** and start debugging instantly.
+
+### 2. Local Setup
+1. Clone the repo.
+2. Open `index.html` in your browser (or serve it with a lightweight server like `serve` or `live-server`).
+3. Start debugging.
+
+---
+
 ## Core Features
 
 ### 🔴 Breakpoint-Driven Timeline
@@ -100,20 +114,6 @@ Every issue maps to one of five core signals:
 | `CORS Restriction` | Missing/mismatched `Access-Control-Allow-Origin` in Browser Mode |
 | `Malformed Request` | `400`, `401`, or `403` response |
 | `Network Failure` | Connection error (status `0`) |
-
----
-
-## Getting Started
-
-PostSense is a single-folder, vanilla JS project. No `npm install`, no heavy dependencies.
-
-### 1. Simple Access (No Setup)
-Open the **[Live Demo](https://tkwind.github.io/BetterMan/)** and start debugging instantly.
-
-### 2. Local Setup
-1. Clone the repo.
-2. Open `index.html` in your browser (or serve it with a lightweight server like `serve` or `live-server`).
-3. Start debugging.
 
 ---
 
