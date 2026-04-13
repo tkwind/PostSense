@@ -10,3 +10,8 @@ node_modules/
 *.webp
 *.png
 *.log
+GSD-STYLE.md
+PROJECT_RULES.md
+WALKTHROUGH.md
+app.js
+model_capabilities.yaml
