@@ -1,20 +1,20 @@
 # ROADMAP.md
 
-> **Current Milestone**: v0.9 - Causal Debugging Layer
-> **Goal**: Move from correlation-based suggestions to identifying the most likely root cause by comparing differences between requests.
+> **Current Milestone**: v1.0 - Root Cause Promotion
+> **Goal**: Promote inferred root causes above raw HTTP errors to make the tool feel intelligent rather than reactive.
 
 ## Must-Haves
-- [ ] Request comparison engine (Method, Body, Headers)
-- [ ] Visual diff for differences
-- [ ] Root cause inference (e.g. "Endpoint likely expects GET")
-- [ ] Enhanced causal evidence messaging
+- [ ] Promote causal theories to Primary Issue
+- [ ] Relegate HTTP status to supporting context
+- [ ] Broken out inference components (Method vs Body)
+- [ ] Refined, cautious, and precise inference language
 
 ## Phases
 
-### Phase 1: Causal Comparison & Inference
+### Phase 1: Root Cause Promotion
 **Status**: ✅ Complete
-**Objective**: Implement the logical comparison engine and root cause mapping logic.
+**Objective**: Implement the theory promotion logic and refactor the UI to lead with causal insights.
 
-### Phase 2: Advanced UI Highlighting
+### Phase 2: Certainty & Signal Strength
 **Status**: ⬜ Not Started
-**Objective**: Implement visual diff UI and inline highlighting for changes.
+**Objective**: Implement multi-comparison certainty levels and highlight the strongest signal.

@@ -1,20 +1,21 @@
-# Phase 1 Summary: Causal Comparison & Inference
+# Phase 1 Summary: Root Cause Promotion
 
 ## Summary
-Successfully implemented a causal debugging layer that deep-diffs requests and infers the likely root cause of failures based on historical session data.
+Successfully implemented the final intelligence layer that promotes inferred root causes (Theory Titles) above raw HTTP errors, effectively transforming the tool into a proactive debugging assistant.
 
 ## What Was Executed
 1. **script.js**:
-   - Expanded `requestHistory` state to capture `hasBody` and `headerCount`.
-   - Implemented `compareRequests` utility to calculate exact deltas between sessions.
-   - Implemented `inferCause` engine to map deltas to logical theories (Payload rejection, Method mismatch).
-   - Refactored `analyzeResponse` reasoning to use a structured "Evidence -> Diff -> Inference" chain.
-2. **Verification**: Verified via browser subagent that:
-   - Comparing a failed POST (with body) against a successful GET (without body) correctly identifies both deltas.
-   - The tool infers that the endpoint "likely rejects requests with payload/body data."
-   - Reasoning text is clearly displayed in the UI.
+   - Refactored `inferCause` to generate high-level **Theory Titles** (e.g. "Payload Restriction").
+   - Updated `analyzeResponse` to lead with the Theory Title if evidence exists, relegating the HTTP status code to subtext.
+   - Refactored `logIssue` to support the new "Promoted" layout with `supporting-status` tags and clean `delta-lists`.
+2. **styles.css**:
+   - Implemented styling for the `supporting-status` tag and `delta-list` bullets.
+3. **Verification**: Verified via browser subagent that:
+   - Success -> Fail sequence triggers the **"Payload Restriction Detected"** title.
+   - **"Status: 404"** is successfully relegated to a de-emphasized tag.
+   - Multiple deltas are cleanly listed as bullets in the reasoning chain.
 
 ## Success Guidelines Verified
-- [x] Reasoning text includes specific field deltas (e.g. Body: Present -> None).
-- [x] Root cause inference is displayed alongside evidence.
-- [x] Inferences correctly distinguish between method changes vs body changes.
+- [x] If a causal pattern is detected, promote it to Primary Issue — VERIFIED (evidence: Theory Titles used as main card headers).
+- [x] HTTP status becomes supporting context — VERIFIED (evidence: `supporting-status` tag implemented).
+- [x] Separate inference components (Method vs Body) — VERIFIED (evidence: `delta-list` broken out into bullets).

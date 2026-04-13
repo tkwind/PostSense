@@ -4,10 +4,10 @@ plan: 1
 wave: 1
 ---
 
-# Plan 1.1: Causal Comparison & Inference
+# Plan 1.1: Issue Promotion & Structural Shift
 
 ## Objective
-Implement deep request comparison and root cause inference to explain WHY a specific change (e.g., removing a body) fixed a failing request.
+Promote inferred causal theories to become the primary focus of the UI, making raw HTTP errors supporting context rather than the main problem title.
 
 ## Context
 - .gsd/SPEC.md
@@ -16,33 +16,32 @@ Implement deep request comparison and root cause inference to explain WHY a spec
 ## Tasks
 
 <task type="auto">
-  <name>Deepen History & Implement Comparison Engine</name>
+  <name>Refactor Analysis for Promotion</name>
   <files>d:\Projects\Better-man\script.js</files>
   <action>
-    - Update the `requestHistory` push logic to capture `headers` count and `hasBody` (boolean).
-    - Implement a `compareRequests(reqA, reqB)` function that returns a list of differences (Method changed, Body removed, Headers added/removed).
-    - Update `analyzeResponse` to iterate through history and find the *most relevant* success (closest timestamp/similarity) for a deeper comparison.
+    - Update `analyzeResponse` to identify if a "High Confidence" causal inference exists.
+    - If it exists, set a new `promotedTitle` field (e.g. "Payload Restriction Detected" instead of "Endpoint Not Found").
+    - Capture the raw HTTP status as `supportingStatus` (e.g. "Status: 404").
+    - Ensure inference wording is precise and cautious (using "likely", "appears to", "observed").
   </action>
-  <verify>Check script.js for compareRequests function and expanded history object.</verify>
-  <done>The tool can now programmatically identify exact differences between two requests to the same URL.</done>
+  <verify>Check script.js for logic that swaps problem titles based on inference confidence.</verify>
+  <done>Primary issues use causal theories as titles when evidence is strong.</done>
 </task>
 
 <task type="auto">
-  <name>Implement Causal Inference Engine</name>
+  <name>Update logIssue UI for Promoted Layout</name>
   <files>d:\Projects\Better-man\script.js</files>
   <action>
-    - Create an `inferCause(delta)` map that translates deltas into human reasons:
-      - (Body: Present -> None) + (Success: 4xx -> 2xx) => "Endpoint likely expects requests without a payload."
-      - (Method: POST -> GET) + (Success: 4xx -> 2xx) => "Endpoint likely supports GET only."
-    - Refactor the reasoning display in `logIssue` to show:
-      - **Difference**: [Detail]
-      - **Inference**: [Reason]
+    - Update the card HTML generation in `logIssue`:
+      - If `promotedTitle` exists, use it as the main header.
+      - Add a small sub-header `[Supporting Status: {code}]`.
+      - Separate the "What Changed" deltas into a clean bulleted list inside the reasoning block.
   </action>
-  <verify>Perform a 404 POST with a body, then a 200 GET without a body, and check card for integrated inference text.</verify>
-  <done>Suggestions now present a logical chain: Difference detected -> Inferred root cause.</done>
+  <verify>Run a 404 POST after a 200 GET and verify the card title changes to something like "Payload Restriction".</verify>
+  <done>The UI feels intelligent by highlighting the root cause over the reactive error code.</done>
 </task>
 
 ## Success Criteria
-- [ ] Reasoning text includes specific field deltas (e.g. Body: Present -> None).
-- [ ] Root cause inference is displayed alongside evidence.
-- [ ] Inferences correctly distinguish between method changes vs body changes.
+- [ ] Primary issues change their title from HTTP codes to Causal Theories when evidence exists.
+- [ ] Raw status codes are displayed as small, de-emphasized supporting text.
+- [ ] Wording is refined to be precise and empirical.

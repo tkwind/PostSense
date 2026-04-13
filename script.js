@@ -47,7 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const li = document.createElement('li');
     li.className = `issue-card severity-${issue.severity || 'warning'}`;
     
-    let html = `<div class="issue-title">${issue.problem}</div>`;
+    let html = `<div class="issue-title">
+                  ${issue.problem}
+                  ${issue.supportingStatus ? `<span class="supporting-status">${issue.supportingStatus}</span>` : ''}
+                </div>`;
     if (issue.why) html += `<div class="issue-why">${issue.why}</div>`;
     if (issue.fix) {
       html += `
@@ -75,6 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </button>
           </div>
           ${sug.reasoning ? `<div class="suggestion-reasoning">Evidence: ${sug.reasoning}</div>` : ''}
+          ${sug.deltas && sug.deltas.length > 0 ? `
+            <div class="delta-list">
+              ${sug.deltas.map(d => `<div class="delta-item">${d}</div>`).join('')}
+            </div>
+          ` : ''}
         `;
       });
       html += `</div>`;
@@ -138,31 +146,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (response.status === 404) {
       const suggestions = [{ id: 'check-path', label: 'Verify URL path', confidence: 'High' }];
       
+      let promotedTitle = 'Endpoint Not Found (404)';
+      let reasoning = '';
+      let deltas = [];
+
       if (currentMethod !== 'GET') {
-          const isEvidenceBased = successfulAlternative && successfulAlternative.method === 'GET';
-          
-          let reasoning = '';
           if (successfulAlternative) {
-            const deltas = compareRequests(currentReqState, successfulAlternative);
-            const cause = inferCause(deltas);
-            reasoning = `${successfulAlternative.method} succeeded (200). Diff: ${deltas.join(', ')}. Inferred: ${cause}`;
+            deltas = compareRequests(currentReqState, successfulAlternative);
+            const theory = inferCause(deltas);
+            promotedTitle = theory.title;
+            reasoning = `${successfulAlternative.method} succeeded (200). ${theory.reason}`;
           }
 
           suggestions.push({ 
             id: 'retry-get', 
             label: 'Retry as GET', 
-            confidence: isEvidenceBased ? 'High' : 'Medium', 
+            confidence: (successfulAlternative && successfulAlternative.method === 'GET') ? 'High' : 'Medium', 
             btnLabel: 'Switch',
-            reasoning: reasoning
+            reasoning: reasoning,
+            deltas: deltas
           });
       }
       
       responseIssues.push({
-        problem: 'Endpoint Not Found (404)',
+        problem: promotedTitle,
+        supportingStatus: `Status: ${response.status} ${response.statusText}`,
         why: successfulAlternative 
-             ? `The server returned 404 for ${currentMethod}, but previously accepted ${successfulAlternative.method}.`
+             ? `Conflict detected: ${currentMethod} failed while ${successfulAlternative.method} was accepted previously.`
              : `The requested endpoint does not exist for ${currentMethod}.`,
-        fix: 'Check for typos or method mismatch.',
+        fix: 'Check for typos or follow the suggested theory below.',
         severity: 'error',
         suggestions
       });
@@ -247,12 +259,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function inferCause(deltas) {
     if (deltas.some(d => d.includes('Body: Present → None'))) {
-      return "Endpoint likely rejects requests with payload/body data.";
+      return {
+        title: "Payload Restriction Detected",
+        reason: "The server appears to reject requests containing a payload body for this endpoint."
+      };
     }
     if (deltas.some(d => d.includes('Method:'))) {
-      return "Endpoint likely expects a different HTTP method for this action.";
+      return {
+        title: "Method Requirement Conflict",
+        reason: "This endpoint requires a specific HTTP method (likely GET) that differs from your current request."
+      };
     }
-    return "The configuration of the successful request is more compatible with the server logic.";
+    return {
+      title: "Configuration Mismatch",
+      reason: "An observed successful alternative exists with a different request configuration."
+    };
   }
 
   function renderAllIssues(responseIssues) {

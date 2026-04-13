@@ -1,8 +1,8 @@
-## Phase 1 Verification: Causal Comparison & Inference
+## Phase 1 Verification: Root Cause Promotion
 
 ### Must-Haves
-- [x] Request comparison engine (method, headers, body) — VERIFIED (evidence: `compareRequests` identifies exactly these fields)
-- [x] Highlight differences (e.g. Method: POST -> GET) — VERIFIED (evidence: `reasoning` string concatenation in `analyzeResponse`)
-- [x] Root cause inference — VERIFIED (evidence: `inferCause` mapping for payload rejection and method mismatch)
+- [x] Promote causal pattern to Primary Issue — VERIFIED (evidence: `promotedTitle` used as card header in `analyzeResponse` logic)
+- [x] HTTP status becomes supporting context — VERIFIED (evidence: `supportingStatus` field de-emphasized in the `logIssue` layout)
+- [x] Separate inference components (Method/Body) — VERIFIED (evidence: `delta-list` implemented for granular reporting)
 
 ### Verdict: PASS
