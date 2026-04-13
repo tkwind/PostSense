@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const issuesList = document.getElementById('issues-list');
 
   let isBrowserMode = false;
+  let requestHistory = []; // Tracks { method, url, status, timestamp }
 
   // Toggle Mode
   modeToggle.addEventListener('change', (e) => {
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
               ${sug.btnLabel || 'Run'}
             </button>
           </div>
+          ${sug.reasoning ? `<div class="suggestion-reasoning">Evidence: ${sug.reasoning}</div>` : ''}
         `;
       });
       html += `</div>`;
@@ -114,19 +116,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function analyzeResponse(response, headersObj, requestOrigin) {
-    // Collect issues found during response phase
     const responseIssues = [];
     const currentMethod = methodSelect.value;
+    const currentUrl = urlInput.value.trim();
+
+    // Find evidence in history
+    const historyMatches = requestHistory.filter(h => h.url === currentUrl);
+    const successfulAlternative = historyMatches.find(h => h.status < 300 && h.method !== currentMethod);
 
     // 1. Advanced HTTP Status Mapping
     if (response.status === 404) {
       const suggestions = [{ id: 'check-path', label: 'Verify URL path', confidence: 'High' }];
+      
       if (currentMethod !== 'GET') {
-          suggestions.push({ id: 'retry-get', label: 'Retry as GET', confidence: 'Medium', btnLabel: 'Switch' });
+          const isEvidenceBased = successfulAlternative && successfulAlternative.method === 'GET';
+          suggestions.push({ 
+            id: 'retry-get', 
+            label: 'Retry as GET', 
+            confidence: isEvidenceBased ? 'High' : 'Medium', 
+            btnLabel: 'Switch',
+            reasoning: isEvidenceBased ? `Observed GET succeeding (200) previously on this URL.` : ''
+          });
       }
+      
       responseIssues.push({
         problem: 'Endpoint Not Found (404)',
-        why: `The server responded with 404. Path: ${urlInput.value}`,
+        why: successfulAlternative 
+             ? `The server returned 404 for ${currentMethod}, but previously accepted ${successfulAlternative.method}.`
+             : `The requested endpoint does not exist for ${currentMethod}.`,
         fix: 'Check for typos or method mismatch.',
         severity: 'error',
         suggestions
@@ -142,12 +159,18 @@ document.addEventListener('DOMContentLoaded', () => {
         ]
       });
     } else if (response.status === 405) {
+      const isGetWorking = successfulAlternative && successfulAlternative.method === 'GET';
       responseIssues.push({
         problem: 'Method Not Allowed (405)',
-        why: `${currentMethod} is not supported here.`,
+        why: `${currentMethod} is not supported here. ${isGetWorking ? 'GET was observed to work previously.' : ''}`,
         severity: 'error',
         suggestions: [
-          { id: 'retry-get', label: 'Switch to GET', confidence: 'High' },
+          { 
+            id: 'retry-get', 
+            label: 'Switch to GET', 
+            confidence: isGetWorking ? 'High' : 'Medium',
+            reasoning: isGetWorking ? 'GET returned 200 on this URL earlier.' : ''
+          },
           { id: 'check-path', label: 'Check API Docs', confidence: 'Medium' }
         ]
       });
@@ -165,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // 2. CORS Checks (Only if status is OK, to avoid noise on errors)
+    // 2. CORS Checks
     if (isBrowserMode && response.status < 300) {
       const acao = headersObj['access-control-allow-origin'] || headersObj['Access-Control-Allow-Origin'];
       
@@ -186,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Process all issues (pre-fetch + response-time)
+    // Process all issues
     renderAllIssues(responseIssues);
   }
 
@@ -349,6 +372,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const requestOrigin = options.headers['Origin'] || options.headers['origin'] || 'null';
       analyzeResponse(response, resHeadersObj, requestOrigin);
+
+      // Store in History
+      requestHistory.push({
+        method,
+        url,
+        status: response.status,
+        timestamp: Date.now()
+      });
 
     } catch (error) {
       resStatus.textContent = 'Network Error';

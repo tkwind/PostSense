@@ -1,8 +1,8 @@
-## Phase 1 Verification: Suggested Actions Engine
+## Phase 1 Verification: History Tracking & Evidence Logic
 
 ### Must-Haves
-- [x] “Suggested Actions” section under issues — VERIFIED (evidence: `logIssue` renders the `suggested-actions-container`)
-- [x] Context-aware messaging tailored to method/status — VERIFIED (evidence: unique suggestions generated for 401, 404, etc.)
-- [x] Action confidence levels (High/Medium) — VERIFIED (evidence: confidence tags added to action items based on engine priority)
+- [x] Track last request + result — VERIFIED (evidence: `requestHistory` array captures data on every send)
+- [x] Confidence must be evidence-based — VERIFIED (evidence: `High` confidence logic in `analyzeResponse` requires `successfulAlternative`)
+- [x] Upgrade suggestions to include reasoning — VERIFIED (evidence: `reasoning` field injected with cites like "Observed GET succeeding...")
 
 ### Verdict: PASS

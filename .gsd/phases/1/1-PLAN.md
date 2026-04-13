@@ -4,10 +4,10 @@ plan: 1
 wave: 1
 ---
 
-# Plan 1.1: Suggested Actions Engine
+# Plan 1.1: History Tracking & Evidence Logic
 
 ## Objective
-Implement a multi-suggestion engine that provides ranked next steps (Retry as GET, Check path, etc.) with confidence levels.
+Implement state tracking for requests and use comparison data to provide evidence-backed debugging insights and confidence levels.
 
 ## Context
 - .gsd/SPEC.md
@@ -16,32 +16,32 @@ Implement a multi-suggestion engine that provides ranked next steps (Retry as GE
 ## Tasks
 
 <task type="auto">
-  <name>Refactor `logIssue` for Multi-Action Support</name>
+  <name>Implement Request History State</name>
   <files>d:\Projects\Better-man\script.js</files>
   <action>
-    - Update `logIssue` to accept a `suggestions` array instead of a single `action`.
-    - Each suggestion should include: `id`, `label`, `confidence` (High/Medium), and `description`.
-    - Refactor the UI rendering to show a "Suggested Actions" block within each issue card, styling higher confidence actions more prominently.
+    - Add a global `requestHistory` array to track the last N requests (URL, Method, Status, Time).
+    - Update the `sendBtn` click handler to push the current request details into history after completion.
+    - Ensure `analyzeResponse` can access this history to find "Recent Alternatives" for the same URL.
   </action>
-  <verify>Check script.js for loop logic in logIssue UI generation.</verify>
-  <done>Multiple buttons can be rendered per issue card with confidence labels.</done>
+  <verify>Check script.js for state management logic in the fetch lifecycle.</verify>
+  <done>The tool successfully remembers the outcome of previous requests during the session.</done>
 </task>
 
 <task type="auto">
-  <name>Enhance Suggestion Engine in `analyzeResponse`</name>
+  <name>Implement Evidence-Based Reasoning</name>
   <files>d:\Projects\Better-man\script.js</files>
   <action>
-    - Update the status code analysis logic to populate multiple suggestions:
-      - 404: Check path (High), Retry as GET (Medium if not GET).
-      - 405: Retry as GET (High if not GET), Check path (Medium).
-      - 401/403: Verify Headers (High), Check path (Medium).
-    - Ensure `why` messages are context-aware (referencing current method/URL).
+    - Refactor `analyzeResponse` to search history for the same URL with different methods.
+    - If a previous request for the same URL with method X was 2xx, and current method Y is 4xx:
+      - Add a "High Confidence" suggestion to switch back to method X.
+      - Inject evidence text: "Suggested because ${X} returned 200 while ${Y} returned ${status}".
+    - Update confidence levels for all other suggestions to be "Medium" by default unless evidence exists.
   </action>
-  <verify>Check analyzeResponse for logic that pushes multiple objects into a new `suggestions` array.</verify>
-  <done>Each failure condition generates at least 2 distinct suggested actions with confidence levels.</done>
+  <verify>Run a 404 POST after a successful GET tracking and check card for reasoning text.</verify>
+  <done>Suggestions now explicitly cite historical evidence when available.</done>
 </task>
 
 ## Success Criteria
-- [ ] Issue cards show a "Suggested Actions" section.
-- [ ] Suggestions include "High" or "Medium" confidence tags.
-- [ ] Multiple actions (Retry as GET + Check Path) appear for 404s/405s.
+- [ ] Suggestions for 404s/405s include specific reasoning citing previous request outcomes.
+- [ ] "High" confidence is strictly reserved for cases with observed successful alternatives.
+- [ ] The engine correctly identifies URL matches in the history.

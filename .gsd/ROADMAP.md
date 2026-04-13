@@ -1,20 +1,20 @@
 # ROADMAP.md
 
-> **Current Milestone**: v0.7 - Debugging Assistant Layer
-> **Goal**: Transform the tool into a guided debugging assistant that suggests next actions and reasoning.
+> **Current Milestone**: v0.8 - Evidence-Based Debugging
+> **Goal**: Make every suggestion backed by observable evidence, not generic heuristics.
 
 ## Must-Haves
-- [ ] "Suggested Actions" engine: Multiple suggestions per issue
-- [ ] Context-aware messaging tailored to method/status/endpoint pattern
-- [ ] Action confidence levels (High/Medium)
-- [ ] Improved Retry UX: "Undo" and "What changed" visibility
+- [ ] Track last request + result (Status codes, response bodies)
+- [ ] Evidence-based Confidence: "High" only if working alternative observed
+- [ ] Suggestions include reasoning citing historical evidence
+- [ ] Result Comparison panel: Before vs After request view
 
 ## Phases
 
-### Phase 1: Suggested Actions Engine
+### Phase 1: History Tracking & Evidence Logic
 **Status**: ✅ Complete
-**Objective**: Implement the suggestion ranking engine and multiple-action UI support with confidence indicators.
+**Objective**: Implement state tracking for requests and use comparison data to provide evidence-backed logic.
 
-### Phase 2: Action History & Retry UX
+### Phase 2: Comparison UI
 **Status**: ⬜ Not Started
-**Objective**: Implement request history tracking to support "Undo" and "Diff" views for retried requests.
+**Objective**: Add the "Before vs After" comparison panel and polish the evidence-based messaging.
