@@ -3,30 +3,29 @@
 > **Status**: `FINALIZED`
 
 ## Vision
-A minimal, production-quality Node.js CLI tool that sends HTTP requests, parses responses, and prints formatted output (status, headers, body) with a code walkthrough for educational purposes.
+A minimal web-based UI for an API request tool that allows users to send requests and format responses directly from the browser, supporting both raw and browser-simulated modes. 
 
 ## Goals
-1. Send GET and POST requests with custom URLs, headers, and JSON bodies using Node 18+ native fetch.
-2. Provide clean CLI usage without external frameworks.
-3. Print clear, formatted responses (status, headers, pretty JSON body).
-4. Provide a detailed code walkthrough explanation.
+1. Provide a layout with URL, Method, dynamic Headers, and JSON body inputs.
+2. Formulate and send requests via standard `fetch`.
+3. Provide an intuitive Response panel for Status, Headers, and formatted JSON Body.
+4. Support Postman Mode (as-is) and Browser Mode (injecting Origin, restricted header logic).
+5. Document the codebase with a "Code Explanation".
 
 ## Non-Goals (Out of Scope)
-- No interactive prompts.
-- No support for other HTTP methods currently (just GET, POST).
-- No external frameworks or overengineered architectures.
+- No build tools (Webpack, Vite, etc.)
+- No JS frameworks (React, Vue, etc.)
+- No full browser policy simulation (only minimal Origin/restriction logic).
 
 ## Users
-Developers learning how to build minimal CLI tools and raw HTTP request engines in Node.js.
+Developers seeking a lightweight, purely local API request tool runnable entirely from an `index.html` file.
 
 ## Constraints
-- Node.js (no frameworks).
-- Native `fetch` (Node 18+).
-- Code under 150 lines.
-- No unnecessary abstractions.
+- Pure HTML/CSS/JS.
+- Native `fetch` API.
 
 ## Success Criteria
-- [ ] Tool correctly parses CLI arguments for GET and POST requests.
-- [ ] Tool correctly constructs and sends requests.
-- [ ] Prints status, headers, and formatted body.
-- [ ] Handles invalid URLs, network failures, and invalid JSON inputs gracefully.
+- [ ] Layout matches the Left/Top/Right/Bottom panel requirements.
+- [ ] Requests successfully fire and load responses into the Right panel.
+- [ ] Mode toggling behavior affects the structure of the outgoing request.
+- [ ] Detailed code explanation is provided.
