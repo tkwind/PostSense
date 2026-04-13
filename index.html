@@ -64,40 +64,50 @@
 
       <button id="send-btn">Send Request</button>
     </section>
-
-    <!-- Right Panel: Response Display -->
-    <section class="right-panel">
-      <h2>Response</h2>
-      
-      <div class="response-content">
-        <div class="response-status">
-          <strong>Status:</strong> <span id="res-status">Waiting...</span>
-        </div>
-
-        <div class="response-headers">
-          <strong>Headers:</strong>
-          <pre id="res-headers"></pre>
-        </div>
-
-        <div class="response-body">
-          <strong>Body:</strong>
-          <pre id="res-body"></pre>
-        </div>
-      </div>
-    </section>
   </main>
 
-  <!-- Bottom Panel: Issues -->
-    <section id="debug-timeline-section" style="display: none;">
-      <h3>Execution Timeline</h3>
-      <div id="timeline-reasoning"></div>
-      <div id="timeline-output"></div>
-    </section>
+  <!-- Bottom Panel: Navigation & Results -->
+  <footer class="bottom-panel">
+    <div class="tabs-header">
+      <button class="tab-btn active" data-tab="tab-response">Response</button>
+      <button class="tab-btn" data-tab="tab-issues">Issues <span id="issue-count-badge" class="count-badge">0</span></button>
+      <button class="tab-btn" data-tab="tab-timeline">Timeline</button>
+    </div>
 
-    <h3>Issues Detected</h3>
-    <ul id="issues-list">
-      <!-- Issues populated here -->
-    </ul>
+    <div class="tabs-content">
+      <!-- Response Tab -->
+      <div id="tab-response" class="tab-pane active">
+        <div class="response-content">
+          <div class="response-status">
+            <strong>Status:</strong> <span id="res-status">Waiting...</span>
+          </div>
+          <div class="response-headers">
+            <strong>Headers:</strong>
+            <pre id="res-headers"></pre>
+          </div>
+          <div class="response-body">
+            <strong>Body:</strong>
+            <pre id="res-body"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Issues Tab -->
+      <div id="tab-issues" class="tab-pane">
+        <ul id="issues-list">
+          <!-- Issues populated here -->
+        </ul>
+      </div>
+
+      <!-- Timeline Tab -->
+      <div id="tab-timeline" class="tab-pane">
+        <div id="debug-timeline-summary" class="timeline-summary-bar">
+          <!-- One-line summary here -->
+        </div>
+        <div id="timeline-reasoning"></div>
+        <div id="timeline-output"></div>
+      </div>
+    </div>
   </footer>
 
   <script src="script.js"></script>

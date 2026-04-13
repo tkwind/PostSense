@@ -17,7 +17,8 @@ const PostSenseEngine = (() => {
     timeline.push({ 
       step: "Initialize Request", 
       status: "success", 
-      icon: "🏗️" 
+      icon: "🏗️",
+      isPrimary: false
     });
 
     // Phase 2: Resolve URL
@@ -26,7 +27,8 @@ const PostSenseEngine = (() => {
       step: "Resolve URL", 
       status: urlValid ? "success" : "failed", 
       detail: urlValid ? `Target: ${new URL(url).hostname}` : "Invalid endpoint",
-      icon: "🌐"
+      icon: "🌐",
+      isPrimary: true
     });
 
     // Phase 3: Method Check
@@ -34,7 +36,8 @@ const PostSenseEngine = (() => {
       step: "Method Check", 
       status: "success", 
       detail: `${method} request`,
-      icon: "⚙️"
+      icon: "⚙️",
+      isPrimary: true
     });
 
     // Phase 4: Headers Applied
@@ -43,7 +46,8 @@ const PostSenseEngine = (() => {
       step: "Headers Applied", 
       status: "success", 
       detail: `${headerCount} headers configured`,
-      icon: "📋"
+      icon: "📋",
+      isPrimary: true
     });
 
     // Phase 5: Environment Simulation
@@ -52,7 +56,8 @@ const PostSenseEngine = (() => {
         step: "Simulation Layer", 
         status: "success", 
         detail: "Browser Mode active (Enforcing CORS/Forbidden Headers)",
-        icon: "🛡️"
+        icon: "🛡️",
+        isPrimary: false
       });
     }
 
@@ -61,7 +66,8 @@ const PostSenseEngine = (() => {
     timeline.push({ 
       step: "Send Request", 
       status: isNetworkError ? "failed" : "success",
-      icon: "📤"
+      icon: "📤",
+      isPrimary: false
     });
 
     // Phase 7: Receive Response
@@ -71,14 +77,25 @@ const PostSenseEngine = (() => {
       status: isSuccess ? "success" : "failed", 
       code: response ? response.status : "Error",
       detail: response ? `HTTP ${response.status}` : "Connection failed",
-      icon: "📥"
+      icon: "📥",
+      isPrimary: true
     });
 
     // Phase 8: Parse Response
     timeline.push({ 
       step: "Parse Response", 
       status: response ? "success" : "failed",
-      icon: "🔍"
+      icon: "🔍",
+      isPrimary: false
+    });
+
+    // Mark First Failure
+    let failureFound = false;
+    timeline.forEach(s => {
+      if (!failureFound && s.status === 'failed') {
+        s.isFirstFailure = true;
+        failureFound = true;
+      }
     });
 
     return timeline;

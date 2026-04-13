@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const resHeaders = document.getElementById('res-headers');
   const resBody = document.getElementById('res-body');
   const issuesList = document.getElementById('issues-list');
-  const timelineSection = document.getElementById('debug-timeline-section');
+  const timelineTab = document.getElementById('tab-timeline');
   const timelineOutput = document.getElementById('timeline-output');
   const timelineReasoning = document.getElementById('timeline-reasoning');
 
@@ -122,9 +122,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Tab Switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.getAttribute('data-tab'));
+    });
+  });
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    
+    document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
   function clearIssues() {
     issuesList.innerHTML = '';
-    timelineSection.style.display = 'none';
+    timelineOutput.innerHTML = '';
+    timelineReasoning.innerHTML = '';
+    document.getElementById('issue-count-badge').textContent = '0';
   }
 
   function analyzeResponse(response, headersObj) {
@@ -172,15 +189,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const reasoning = PostSenseEngine.generateReasoning(mergedTimeline, workingRequestData, currentRequestData);
 
       renderTimeline(mergedTimeline, reasoning);
+      switchTab('tab-timeline'); // Auto-switch to timeline on divergence
     } else {
-      // If no alternative, just show the single failed timeline
       renderTimeline(failedTimeline);
+      if (response.status >= 400) {
+        switchTab('tab-issues'); // Auto-switch to issues on failure
+      } else {
+        switchTab('tab-response'); // Stay on response for success
+      }
     }
 
     // Existing label analysis for specific feedback cards
-    // 1. Advanced HTTP Status Mapping
     if (response.status === 404) {
-      // ... keep existing logic but simplify since timeline carries the weight
       responseIssues.push({
         problem: 'Endpoint Not Found',
         supportingStatus: `Status: ${response.status}`,
@@ -202,9 +222,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderTimeline(timeline, reasoning) {
-    timelineSection.style.display = 'block';
     timelineOutput.innerHTML = '';
     timelineReasoning.innerHTML = '';
+    const summaryBar = document.getElementById('debug-timeline-summary');
+
+    // Summary Bar
+    const status = timeline[timeline.length - 1].status === 'success' ? 'Success' : 'Failed';
+    const code = timeline.find(s => s.code)?.code || '';
+    const firstFail = timeline.find(s => s.isFirstFailure || s.isFirstDivergence);
+    
+    summaryBar.innerHTML = `
+      <span>Flow: <strong>${status} ${code ? `(${code})` : ''}</strong> • Steps: ${timeline.length}</span>
+      ${firstFail ? `<span class="first-failure-tag">First Conflict: ${firstFail.step}</span>` : ''}
+    `;
 
     if (reasoning) {
       timelineReasoning.innerHTML = `
@@ -225,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     timeline.forEach(step => {
       const entry = document.createElement('div');
-      entry.className = `timeline-entry status-${step.status}`;
+      entry.className = `timeline-entry status-${step.status} ${step.isPrimary ? 'primary-step' : 'secondary-step'}`;
       
       let html = `
         <div class="timeline-marker"></div>
@@ -253,16 +283,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     timelineOutput.appendChild(container);
+
+    // Show Details Button
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'toggle-details-btn';
+    toggleBtn.textContent = 'Show Full Log';
+    toggleBtn.onclick = () => {
+      const isExpanded = toggleBtn.textContent === 'Hide Full Log';
+      container.querySelectorAll('.secondary-step').forEach(s => s.classList.toggle('show'));
+      container.querySelectorAll('.timeline-entry').forEach(s => s.classList.toggle('expanded'));
+      toggleBtn.textContent = isExpanded ? 'Show Full Log' : 'Hide Full Log';
+    };
+    timelineOutput.appendChild(toggleBtn);
   }
 
-
-
   function renderAllIssues(responseIssues) {
-    // Current issuesList already has pre-fetch issues (like blocked headers)
-    // We want to prioritize them.
-    
-    // Instead of logging immediately in analyzeResponse, we refactor to a bulk render
-    // But since logIssue appends to the DOM, let's just make sure we handle the hierarchy.
     
     // For simplicity with existing code, let's just log the responseIssues
     responseIssues.forEach(issue => logIssue(issue));
@@ -308,6 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+    // Update badge count after rendering completes
+    document.getElementById('issue-count-badge').textContent = issuesList.children.length;
   }
 
   function isValidUrl(string) {
