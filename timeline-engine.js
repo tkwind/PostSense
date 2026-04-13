@@ -201,8 +201,7 @@ const PostSenseEngine = (() => {
         explanation: `${failedReq.method} used instead of ${workingReq.method}; endpoint likely read-only or restricted.`,
         expected: workingReq.method,
         actual: failedReq.method,
-        impact: "This endpoint appears to restricted to specific HTTP methods.",
-        action: "Switch to GET",
+        impact: "This endpoint appears to be restricted to specific HTTP methods.",        action: "Switch to GET",
         actionId: "retry-get",
         confidence: "high"
       };
