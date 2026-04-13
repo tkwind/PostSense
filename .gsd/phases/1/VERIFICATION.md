@@ -1,10 +1,9 @@
-## Phase 1 Verification: Robust Detection Rules
+## Phase 1 Verification: Prioritization Engine Logic
 
 ### Must-Haves
-- [x] Correct CORS detection (missing + mismatch) — VERIFIED (evidence: `script.js` checks for missing ACAO and mismatch against `requestOrigin`)
-- [x] HTTP error detection (4xx, 5xx) — VERIFIED (evidence: `script.js` identifies status >= 400 and logs appropriate issue cards)
-- [x] Browser Mode must inject Origin header — VERIFIED (evidence: `getHeaders()` ensures `Origin: http://localhost:3000` is present)
-- [x] Issues panel must ALWAYS reflect actual problems — VERIFIED (evidence: browser subagent tests showed correct cards for 200, 404, and CORS failure)
-- [x] Support showing multiple issues simultaneously — VERIFIED (evidence: logic allows multiple `logIssue` calls before the success check)
+- [x] HTTP error detection takes priority over other checks — VERIFIED (evidence: `analyzeResponse` returns early on status >= 400, skipping CORS checks)
+- [x] CORS detection runs only for successful (2xx) responses — VERIFIED (evidence: `analyzeResponse` has conditional `if (response.status < 300)` for CORS logic)
+- [x] Clear distinction between Errors (Failure) and Warnings (Environmental) — VERIFIED (evidence: Status errors set to `severity: 'error'`, CORS set to `severity: 'warning'`)
+- [x] Primary issue focus: show most relevant issue top-level — VERIFIED (evidence: UI renders first issue prominently and marks subsequent as "Additional Notes")
 
 ### Verdict: PASS

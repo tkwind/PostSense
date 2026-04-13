@@ -1,21 +1,20 @@
 # ROADMAP.md
 
-> **Current Milestone**: v0.4 - Real Detection Accuracy
-> **Goal**: Make the tool reliably detect and explain basic API issues across real-world scenarios.
+> **Current Milestone**: v0.5 - Intelligent Issue Prioritization
+> **Goal**: Ensure the tool identifies the most relevant issue instead of blindly reporting all possible problems.
 
 ## Must-Haves
-- [ ] Correct CORS detection (missing + mismatch)
-- [ ] HTTP error detection (4xx, 5xx)
-- [ ] Browser Mode must inject Origin header
-- [ ] Issues panel must ALWAYS reflect actual problems (no false "No issues" states)
-- [ ] Support showing multiple issues simultaneously
+- [ ] HTTP error detection takes priority over other checks
+- [ ] CORS detection runs only for successful (2xx) responses
+- [ ] Clear distinction between Errors (Failure) and Warnings (Environmental)
+- [ ] Primary issue focus: show most relevant issue top-level
 
 ## Phases
 
-### Phase 1: Robust Detection Rules
+### Phase 1: Prioritization Engine Logic
 **Status**: ✅ Complete
-**Objective**: Implement systematic status code analysis (4xx/5xx) and CORS mismatch detection (Origin vs. Access-Control-Allow-Origin values).
+**Objective**: Refactor `analyzeResponse` to implement the priority hierarchy and show secondary issues as additional notes.
 
-### Phase 2: UI Polish & Intelligence
+### Phase 2: Visual & UX Polishing
 **Status**: ⬜ Not Started
-**Objective**: Refine severity labeling, add request method mismatch hints, and ensure the "No issues detected" state is accurate.
+**Objective**: Improve issue explanation clarity and refine visual severity cues (Red/Yellow).

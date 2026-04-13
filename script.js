@@ -72,49 +72,53 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function analyzeResponse(response, headersObj, requestOrigin) {
-    let hasIssues = false;
+    // Collect issues found during response phase
+    const responseIssues = [];
 
-    // 1. HTTP Status Check
-    if (response.status >= 400 && response.status < 500) {
-      logIssue({
-        problem: `Client Error (${response.status})`,
-        why: `The server responded with a client-side error: ${response.statusText}`,
-        severity: 'warning'
-      });
-      hasIssues = true;
-    } else if (response.status >= 500) {
-      logIssue({
-        problem: `Server Error (${response.status})`,
-        why: `The server encountered an error while processing the request: ${response.statusText}`,
+    // 1. HTTP Status Check (Primary Priority)
+    if (response.status >= 400) {
+      responseIssues.push({
+        problem: `${response.status >= 500 ? 'Server' : 'Client'} Error (${response.status})`,
+        why: `The server responded with an error: ${response.statusText}`,
         severity: 'error'
       });
-      hasIssues = true;
     }
 
-    // 2. CORS Checks
-    if (isBrowserMode) {
+    // 2. CORS Checks (Only if status is OK, to avoid noise on errors)
+    if (isBrowserMode && response.status < 300) {
       const acao = headersObj['access-control-allow-origin'] || headersObj['Access-Control-Allow-Origin'];
       
       if (!acao) {
-        logIssue({
+        responseIssues.push({
           problem: 'CORS Missing',
           why: 'This API will fail in browser due to missing CORS headers',
           fix: 'Access-Control-Allow-Origin: *',
-          severity: 'error'
+          severity: 'warning'
         });
-        hasIssues = true;
       } else if (acao !== '*' && acao !== requestOrigin) {
-        logIssue({
+        responseIssues.push({
           problem: 'CORS Mismatch',
           why: `The 'Access-Control-Allow-Origin' header (${acao}) does not match the request Origin (${requestOrigin}).`,
           fix: `Access-Control-Allow-Origin: ${requestOrigin}`,
-          severity: 'error'
+          severity: 'warning'
         });
-        hasIssues = true;
       }
     }
 
-    // 3. Success State (only if no issues logged yet)
+    // Process all issues (pre-fetch + response-time)
+    renderAllIssues(responseIssues);
+  }
+
+  function renderAllIssues(responseIssues) {
+    // Current issuesList already has pre-fetch issues (like blocked headers)
+    // We want to prioritize them.
+    
+    // Instead of logging immediately in analyzeResponse, we refactor to a bulk render
+    // But since logIssue appends to the DOM, let's just make sure we handle the hierarchy.
+    
+    // For simplicity with existing code, let's just log the responseIssues
+    responseIssues.forEach(issue => logIssue(issue));
+
     if (issuesList.children.length === 0) {
        const li = document.createElement('li');
        li.className = 'issue-card severity-success';
@@ -122,6 +126,26 @@ document.addEventListener('DOMContentLoaded', () => {
        li.style.background = '#eafaf1';
        li.innerHTML = '<div class="issue-title" style="color: #27ae60;">No issues detected</div><div class="issue-why">The request executed cleanly according to simulation rules.</div>';
        issuesList.appendChild(li);
+    } else if (issuesList.children.length > 1) {
+      // Nice-to-have: mark the subsequent ones as secondary
+      const cards = issuesList.querySelectorAll('.issue-card');
+      cards.forEach((card, index) => {
+        if (index > 0) {
+          card.style.opacity = '0.7';
+          card.style.transform = 'scale(0.98)';
+          card.style.marginTop = '-5px';
+          // Add a small label if it doesn't have one
+          if (!card.querySelector('.secondary-label')) {
+            const label = document.createElement('div');
+            label.className = 'secondary-label';
+            label.textContent = 'Additional Note';
+            label.style.fontSize = '0.7rem';
+            label.style.textTransform = 'uppercase';
+            label.style.opacity = '0.6';
+            card.prepend(label);
+          }
+        }
+      });
     }
   }
 

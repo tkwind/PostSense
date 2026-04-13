@@ -4,10 +4,10 @@ plan: 1
 wave: 1
 ---
 
-# Plan 1.1: Robust Detection Rules
+# Plan 1.1: Prioritization Engine Logic
 
 ## Objective
-Enhance the analysis engine to detect HTTP error statuses and CORS header mismatches (not just missing headers).
+Implement a priority-based analysis engine that ranks issues found in an API response and focuses the UI on the most critical one.
 
 ## Context
 - .gsd/SPEC.md
@@ -16,30 +16,33 @@ Enhance the analysis engine to detect HTTP error statuses and CORS header mismat
 ## Tasks
 
 <task type="auto">
-  <name>Implement Status Code & CORS Mismatch Logic</name>
+  <name>Refactor `analyzeResponse` for Priority</name>
   <files>d:\Projects\Better-man\script.js</files>
   <action>
-    Modify `analyzeResponse(response, headersObj)`:
-    - **HTTP Status Check**: Detect 4xx and 5xx statuses. Log an issue for each (e.g., "Client Error" or "Server Error") with the numeric code and status text.
-    - **CORS Mismatch Check**: If in Browser Mode, compare the sent `Origin` header with the response `Access-Control-Allow-Origin` header. If they don't match and ACAO is not `*`, log a "CORS Mismatch" error.
-    - **Multiple Issues Support**: Ensure all detected issues are logged before checking for the "No issues detected" case.
+    - Refactor `analyzeResponse` to collect all issues into an array before logging.
+    - Implement the priority hierarchy:
+      1. HTTP Status Errors (4xx/5xx) take absolute priority. If found, skip CORS checks.
+      2. CORS checks (Missing/Mismatch) only run for 2xx responses.
+    - Separate findings into `primaryIssue` and `secondaryNotes`.
+    - Modify the UI update logic to clear the list and show the Primary Issue card prominently.
   </action>
-  <verify>Check for new conditional blocks in script.js for status >= 400 and CORS value comparison.</verify>
-  <done>The engine logs specific cards for 404/500 errors and identifies if an API returned an ACAO header that doesn't match the simulated Origin.</done>
+  <verify>Check script.js for conditional CORS logic and itemized priority array handling.</verify>
+  <done>HTTP errors are reported first, and CORS warnings are only analyzed for successful status codes.</done>
 </task>
 
 <task type="auto">
-  <name>Refine Success State Logic</name>
+  <name>Implement "Additional Notes" UI</name>
   <files>d:\Projects\Better-man\script.js</files>
   <action>
-    - Move the "No issues detected" check to a separate function or ensure it only fires after *all* analysis steps (including the fetch catch block if applicable, though usually analysis happens on successful responses).
-    - Ensure that if a Network Error occurs (catch block), the success message is definitely suppressed.
+    - Update the issues list rendering to support a secondary section if multiple issues are detected.
+    - If `secondaryNotes` exist, render them as smaller, less prominent cards or a dedicated "Additional Observations" block below the primary issue.
+    - Ensure the "No issues detected" state still works correctly.
   </action>
-  <verify>Run a request that triggers an error; confirm no success card appears.</verify>
-  <done>Success card only appears when absolutely no errors or warnings were logged during the entire request lifecycle.</done>
+  <verify>Run a request that might trigger multiple warnings (if any) and see the visual hierarchy.</verify>
+  <done>Multiple issues are displayed with a clear visual distinction between the main problem and secondary notes.</done>
 </task>
 
 ## Success Criteria
-- [ ] 404/500 responses trigger dedicated issue cards.
-- [ ] CORS mismatch (e.g. Origin: localhost:3000 vs ACAO: other-domain.com) is detected and reported.
-- [ ] Multiple issues logged for a single request appear correctly as separate cards.
+- [ ] HTTP 4xx/5xx errors suppress CORS analysis to avoid "noise".
+- [ ] CORS issues only appear for successful requests (2xx).
+- [ ] UI clearly highlights the "Most Important" issue found.

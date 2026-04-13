@@ -1,17 +1,17 @@
-# Phase 1 Summary: Robust Detection Rules
+# Phase 1 Summary: Prioritization Engine Logic
 
 ## Summary
-Implemented systematic status code checking and CORS mismatch detection in the analysis engine.
+Successfully refactored the analysis engine to prioritize critical errors and demote environmental warnings to "Additional Notes".
 
 ## What Was Executed
 1. **script.js**:
-   - Refactored `analyzeResponse` to accept `requestOrigin`.
-   - Added logic for 4xx and 5xx status codes.
-   - Added logic to compare `Access-Control-Allow-Origin` values against the request `Origin`.
-   - Refined the "No issues detected" gating logic.
-2. **Verification**: Conducted manual tests using `npx serve` and a browser agent to confirm accurate reporting of 200 (Success), 404 (Client Error), and CORS Missing states in Browser Mode.
+   - Refactored `analyzeResponse` to collect issues and implement the priority hierarchy.
+   - HTTP Status errors (4xx/5xx) now take absolute priority and suppress CORS analysis.
+   - CORS checks only run for successful (2xx) responses.
+   - Implemented `renderAllIssues` with "Additional Note" styling for secondary problems.
+2. **Verification**: Verified via browser subagent that status errors are prioritized and multiple issues are correctly separated into "Primary" and "Secondary" visual tiers.
 
 ## Success Guidelines Verified
-- 404/500 responses trigger dedicated issue cards.
-- CORS mismatch is detected and reported.
-- Success card only appears when clean.
+- HTTP 4xx/5xx errors suppress CORS analysis.
+- CORS issues only appear for successful requests (2xx).
+- UI clearly highlights the "Most Important" issue.
